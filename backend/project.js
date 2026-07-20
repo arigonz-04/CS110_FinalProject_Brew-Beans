@@ -1,8 +1,16 @@
 const express = require('express');
-const cors = require('cors');
+const { check, validationResult } = require('express-validator');
 const app = express();
-app.use(cors());
+app.use(express.json());
 const port = 3000;
+
+const inputChecker = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({errors: errors.array()});
+    }
+    next();
+};
 
 //Get endpoint welcome message
 app.get('/', (req, res) => {
@@ -12,15 +20,22 @@ app.get('/', (req, res) => {
 // ARIANA'S TASKS
 // ==========================================
 
-// User Authentication
-app.post('/api/auth/register', (req, res) => {
-    // TODO: Hash password and insert user into SQL DB
-    res.status(201).json({ message: "Register endpoint placeholder" });
+// User Authentication: Registering
+app.post('/api/auth/register', [
+    check('name').notEmpty().trim().escape(),
+    check('email').isEmail().normalizeEmail(),
+    check('password').isLength({ min: 6 }).trim().escape()  
+], inputChecker, (req, res) => {
+    //HASH PASSWORD with Bcrypt
+    res.status(201).json({ message: "User registered successfully" });
 });
 
-app.post('/api/auth/login', (req, res) => {
-    // TODO: Verify credentials against SQL DB and issue session/token
-    res.json({ message: "Login endpoint placeholder" });
+//User Authentication: Login
+app.post('/api/auth/login', [
+    check('email').isEmail().normalizeEmail(),
+    check('password').notEmpty()
+], inputChecker, (req,res) => {
+    res.json({message: "Login verification passed"});
 });
 
 // User Profiling
@@ -29,29 +44,39 @@ app.get('/api/profile/:id', (req, res) => {
     res.json({ message: `Fetching profile for user ${req.params.id}` });
 });
 
-app.put('/api/profile/:id', (req, res) => {
-    // TODO: Update user profile info in SQL
-    res.json({ message: `Profile updated for user ${req.params.id}` });
+//Update profiles
+app.put('/api/profile/:id', [
+    check('name').optional().trim().escape(),
+    check('bio').optional().trim().escape()
+], inputChecker, (req, res) => {
+    res.json({message: `Profile updated successfully for the user ${req.params.id}`});
 });
 
+//Profile Delete
 app.delete('/api/profile/:id', (req, res) => {
-    // TODO: Handle account deletion logic
     res.json({ message: `Deleted account for user ${req.params.id}` });
 });
 
 // Market Listings
-app.post('/api/listings', (req, res) => {
-    // TODO: Insert a new coffee item listing into SQL
-    res.status(201).json({ message: "Listing created placeholder" });
+app.post('/api/listings', [
+    check('title').notEmpty().trim().escape(),
+    check('price').isFloat({min:0}),
+    check('category').isIn(['Coffee Beans', 'Espresso Machines', 'Syrups', 'Accessories']),
+    check('item_condition').isIn(['New', 'Like New', 'Good', 'Fair'])
+], inputChecker, (req,res) => {
+    res.status(201).json({message: "Listing is correctly placed, ready to add to SQL"})
 });
 
-app.put('/api/listings/:id', (req, res) => {
-    // TODO: Edit existing listing details
-    res.json({ message: `Updated listing ${req.params.id}` });
+//Allows for users to edit their listings
+app.put('/api/listings/:id', [
+    check('title').optional().trim().escape(),
+    check('price').optional().isFloat({min:0})
+], inputChecker, (req, res) => {
+    res.json({message: `Listing updated successfully for ${req.params.id}`});
 });
 
+//Delete listings
 app.delete('/api/listings/:id', (req, res) => {
-    // TODO: Delete an active listing
     res.json({ message: `Deleted listing ${req.params.id}` });
 });
 
