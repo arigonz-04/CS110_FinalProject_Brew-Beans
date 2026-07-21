@@ -3,6 +3,7 @@ import './CSS/App.css';
 import CreateListing from "./Pages/CreateListing";
 import Login from "./Pages/Login";
 import CreateAccount from "./Pages/CreateAccount";
+import UserProfile from "./Pages/Profile";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("Login");
@@ -15,7 +16,7 @@ function App() {
       case 'CreateAccount':
         return <CreateAccount setCurrentPage={setCurrentPage}/>;
       case 'Profile':
-        return <div className="page"><h2>User Profile Dashboard (Ariana)</h2></div>;
+        return <UserProfile userId={1} setCurrentPage={setCurrentPage}/>;
       case 'ProductDetail':
         return <div className="page"><h2>Product Detail & Recommendations (Barsha)</h2></div>;
       case 'CreateListing':

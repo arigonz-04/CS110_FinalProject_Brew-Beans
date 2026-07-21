@@ -1,0 +1,159 @@
+.profile-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.profile-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  background-color: #ffffff;
+  border: 2px solid #4a3b32;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.profile-left-col {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.user-name-title {
+  font-size: 28px;
+  color: #060606;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.edit-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.edit-toggle-btn {
+  background: none;
+  border: 1px solid #4a3b32;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #4a3b32;
+}
+
+.edit-toggle-btn:hover {
+  background-color: #f6f2ee;
+}
+
+.profile-pic-box {
+  width: 150px;
+  height: 150px;
+  border: 2px solid #4a3b32;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fffdfb;
+  margin-bottom: 20px;
+}
+
+.avatar-placeholder {
+  font-size: 48px;
+  font-weight: bold;
+  color: #4a3b32;
+}
+
+.about-me-section h3 {
+  margin-bottom: 6px;
+  color: #060606;
+}
+
+.bio-text {
+  color: #444;
+  line-height: 1.4;
+  margin-top: 0;
+  padding-bottom: 15px;
+}
+
+.profile-right-col {
+  border-left: 1px solid #e3d7d0;
+  padding-left: 20px;
+}
+
+.profile-right-col h2 {
+  margin-top: 0;
+  color: #060606;
+  margin-bottom: 20px;
+}
+
+.active-listings-box {
+  background-color: #fffdfb;
+  border: 1px solid #e3d7d0;
+  border-radius: 6px;
+  padding: 10px;
+  min-height: 200px;
+}
+
+.listings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.listing-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #f0e8e2;
+}
+
+.listing-item:last-child {
+  border-bottom: none;
+}
+
+.item-price {
+  margin-left: 8px;
+  color: #8c6d58;
+  font-weight: bold;
+}
+
+.delete-item-btn {
+  background: none;
+  border: none;
+  color: #a83232;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.delete-account-btn {
+  margin-top: 20px;
+  background-color: #952a2a;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  align-self: flex-start;
+}
+
+.delete-account-btn:hover {
+  background-color: #6e1d1d;
+}
+
+.save-btn {
+  background-color: #4a3b32;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+}
