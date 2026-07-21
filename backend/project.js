@@ -1,6 +1,8 @@
 const express = require('express');
+const cors = require('cors');
 const { check, validationResult } = require('express-validator');
 const app = express();
+app.use(cors());
 app.use(express.json());
 const port = 3000;
 
@@ -57,14 +59,20 @@ app.delete('/api/profile/:id', (req, res) => {
     res.json({ message: `Deleted account for user ${req.params.id}` });
 });
 
-// Market Listings
+// Market Create Listings
 app.post('/api/listings', [
     check('title').notEmpty().trim().escape(),
     check('price').isFloat({min:0}),
     check('category').isIn(['Coffee Beans', 'Espresso Machines', 'Syrups', 'Accessories']),
-    check('item_condition').isIn(['New', 'Like New', 'Good', 'Fair'])
+    check('item_condition').isIn(['New', 'Like New', 'Good', 'Fair']),
+    check('description').optional().trim().escape()
 ], inputChecker, (req,res) => {
-    res.status(201).json({message: "Listing is correctly placed, ready to add to SQL"})
+    console.log("Received Listing:");
+    console.log(req.body);
+
+    res.status(201).json({message: "Listing is correctly placed, ready to add to SQL",
+        listing: req.body
+    })
 });
 
 //Allows for users to edit their listings

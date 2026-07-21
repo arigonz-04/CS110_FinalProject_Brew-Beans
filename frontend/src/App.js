@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import './Components/App.css';
+import './CSS/App.css';
+import CreateListing from "./Pages/CreateListing";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('Home');
-
+  const [currentPage, setCurrentPage] = useState("Login");
   const renderPage = () => {
     switch(currentPage) {
       case 'Home':
@@ -15,7 +15,7 @@ function App() {
       case 'ProductDetail':
         return <div className="page"><h2>Product Detail & Recommendations (Barsha)</h2></div>;
       case 'CreateListing':
-        return <div className="page"><h2>List Your Coffee Gear (Ariana)</h2></div>;
+        return <CreateListing />;
       case 'Messages':
         return <div className="page"><h2>Coffee Chat Corner (Shared)</h2></div>;
       default:
@@ -28,8 +28,6 @@ function App() {
       <nav className="navbar" style={{ padding: '15px', background: '#4a3b32', color: '#fff', display: 'flex', gap: '15px' }}>
         <b style={{marginRight: 'auto'}}>☕ Brew & Beans Market</b>
         <button onClick={() => setCurrentPage('Home')}>Home</button>
-        <button onClick={() => setCurrentPage('Login')}>Login</button>
-        <button onClick={() => setCurrentPage('CreateListing')}>+ Sell Gear</button>
         <button onClick={() => setCurrentPage('Profile')}>My Profile</button>
         <button onClick={() => setCurrentPage('Messages')}>Messages</button>
       </nav>

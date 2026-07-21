@@ -1,0 +1,104 @@
+.CreateListing-container {
+    max-width: 650px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.CreateListing-title {
+    color: #060606;
+    margin-bottom: 24px;
+    padding-bottom: 10px;
+}
+
+.CreateListing-top-section {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+/* export image to just have a plz upload picture here image to be displayed */
+.CreateListing-pic_upload-box {
+  width: 180px;
+  height: 180px;
+  border: 2px dashed #8c6d58;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: #fffdfb;
+  color: #8c6d58;
+  font-weight: 500;
+}
+
+.listing-details-stack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-field {
+  padding: 12px;
+  width: 100%;
+  border: 1px solid #e3d7d0;
+  border-radius: 4px;
+  font-size: 15px;
+  background-color: #fffdfb;
+}
+
+.description-section {
+  margin-bottom: 24px;
+}
+
+.description-textarea {
+  width: 100%;
+  height: 150px;
+  padding: 12px;
+  border: 1px solid #e3d7d0;
+  border-radius: 4px;
+  box-sizing: border-box;
+  resize: none;
+  background-color: #fffdfb;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #4a3b32;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background:#2d221d;
+}
+
+body{
+    background:#f6f2ee;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+/* Removes spin arrows */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
