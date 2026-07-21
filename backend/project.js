@@ -6,6 +6,26 @@ app.use(cors());
 app.use(express.json());
 const port = 3000;
 
+const mysql = require('mysql2/promise');
+
+const db = mysql.createPool({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'brew_beans_db',
+    waitForConnections: true,
+    connectionLimit: 5
+});
+
+db.getConnection()
+.then(conn => {
+    console.log("SQL connected");
+    conn.release();
+})
+.catch(err => {
+    console.error("SQL Connection Error", err.message);
+});
+
 const inputChecker = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -27,36 +47,109 @@ app.post('/api/auth/register', [
     check('name').notEmpty().trim().escape(),
     check('email').isEmail().normalizeEmail(),
     check('password').isLength({ min: 6 }).trim().escape()  
-], inputChecker, (req, res) => {
-    //HASH PASSWORD with Bcrypt
-    res.status(201).json({ message: "User registered successfully" });
+], inputChecker, async(req, res) => {
+    const {name, email, password} = req.body;
+    try {
+        const [existing] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
+        if (existing.lenth > 0) {
+            return res.status(400).json({message: "Email exists already"});
+        }
+
+        const hashPassword = await bcrypt.hash(password, 10);
+
+        const [result] = await db.query(
+            'INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?', [name, email,hashPassword]
+        );
+
+        res.status(201).json({
+            message: "User registered"
+        });
+    } catch(err) {
+        console.error("SQL Register Error", err);
+    }
 });
 
 //User Authentication: Login
 app.post('/api/auth/login', [
     check('email').isEmail().normalizeEmail(),
     check('password').notEmpty()
-], inputChecker, (req,res) => {
-    res.json({message: "Login verification passed"});
+], inputChecker, async (req,res) => {
+    const {email, password} = req.body;
+    try {
+        const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        if (users.length == 0) {
+            return res.status(400).json({message: "Invalid email or password"});
+        }
+        const user = users[0];
+
+        const isMatch = await bcrypt.compare(password, user.pasword_hash);
+        if (!isMatch) {
+            return res.status(400).json({message: "Invalid email or password"});
+        }
+        
+        res.json({
+            message: "Login successful!",
+            user: { id: user.id, name: user.name, email: user.email }
+        });
+    } catch (err) {
+        console.error("SQL Error:", err);
+    }
 });
 
 // User Profiling
-app.get('/api/profile/:id', (req, res) => {
-    // TODO: Query user profiles & selling history from SQL
-    res.json({ message: `Fetching profile for user ${req.params.id}` });
+app.get('/api/profile/:id', async(req, res) => {
+   const userID = req.params.id;
+   try {
+    const[users] = await db.query(
+        'SELECT id, name, email, bio, profile_picture_url, created_at FROM users WHERE id= ?', [userID]
+    );
+
+    if (users.length == 0) {
+        return res.status(404).json({message: "User not found"});
+    }
+
+    const [listings] = await db.query(
+        'SELECT * FROM listings WHERE seller_id = ? ORDER BY created_at DESC', [userID]
+    );
+
+    res.json({user: users[0], listings: listings});
+   } catch(err) {
+    console.error("SQL Profile Error:", err);
+   }
 });
 
 //Update profiles
 app.put('/api/profile/:id', [
     check('name').optional().trim().escape(),
     check('bio').optional().trim().escape()
-], inputChecker, (req, res) => {
-    res.json({message: `Profile updated successfully for the user ${req.params.id}`});
+], inputChecker, async(req, res) => {
+   const userID = req.params.id;
+   const {name, bio} = req.body;
+   try {
+    const [result] = await db.query(
+        'UPDATE users SET name = COALESCE(?, name), bio = COALESCE(?, bio) WHERE id = ?',[name, bio, userID]
+    );
+    
+    if (result.affectedRows == 0) {
+        return res.status(404).json({message: "User not found"});
+    }
+   } catch (err) {
+    console.error("SQL Profile Update Error", err);
+   }
 });
 
 //Profile Delete
-app.delete('/api/profile/:id', (req, res) => {
-    res.json({ message: `Deleted account for user ${req.params.id}` });
+app.delete('/api/profile/:id', async(req, res) => {
+    const userID = req.params.id;
+    try {
+        const[result] = await db.query('DELETE FROM users WHERE id = ?', [userID]);
+
+        if (result.affectedRows == 0) {
+            return res.status(404).json({message: "User not found"});
+        }
+    } catch (err) {
+        console.error("SQL Delete Profile Error:", err);
+    }
 });
 
 // Market Create Listings
@@ -66,26 +159,56 @@ app.post('/api/listings', [
     check('category').isIn(['Coffee Beans', 'Espresso Machines', 'Syrups', 'Accessories']),
     check('item_condition').isIn(['New', 'Like New', 'Good', 'Fair']),
     check('description').optional().trim().escape()
-], inputChecker, (req,res) => {
-    console.log("Received Listing:");
-    console.log(req.body);
-
-    res.status(201).json({message: "Listing is correctly placed, ready to add to SQL",
-        listing: req.body
-    })
+], inputChecker, async (req,res) => {
+    const { seller_id, title, price, category, item_condition, description, image_url } = req.body;
+    try {
+        const [result] = await db.query(
+        `INSERT INTO listings (seller_id, title, price, category, item_condition, description, image_url)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [seller_id, title, price, category, item_condition, description || '', image_url || '']
+        );
+    } catch(err) {
+        console.error("SQL Create Listing Error:", err);
+    }
 });
 
 //Allows for users to edit their listings
 app.put('/api/listings/:id', [
     check('title').optional().trim().escape(),
-    check('price').optional().isFloat({min:0})
-], inputChecker, (req, res) => {
-    res.json({message: `Listing updated successfully for ${req.params.id}`});
+    check('price').optional().isFloat({min:0}),
+    check('description').optional().trim().escape()
+], inputChecker, async(req, res) => {
+    const listingID = req.params.id;
+    const {title, price, description} = req.body;
+    try {
+        const [result] = await db.query(
+            `UPDATE listings
+            SET title = COALESCE(?, title),
+                price = COALESCE(?, price),
+                description = COALESCE(?, description)
+            WHERE id = ?`, [title, price, description, listingID]
+        );
+
+        if (result.affectedRows == 0) {
+            return res.status(404).json({message: "Listing not found"});
+        }
+    } catch(err) {
+        console.error("SQL Edit Listing Error:", err);
+    }
 });
 
 //Delete listings
-app.delete('/api/listings/:id', (req, res) => {
-    res.json({ message: `Deleted listing ${req.params.id}` });
+app.delete('/api/listings/:id', async(req, res) => {
+    const listingID = req.params.id;
+    try {
+        const [result] = await db.query('DELETE FROM listings WHERE id = ?', [listingID]);
+
+        if (result.affectedRows == 0) {
+            return res.status(404).json({message: "Listing not found"});
+        }
+    } catch(err) {
+        console.error("SQL Delete Listing Error:", err);
+    }
 });
 
 // ==========================================
