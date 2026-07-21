@@ -1,2 +1,2 @@
-import React, { useState, useEffect } from 'react';
-import './Components/Home.css';
+import React, { useState } from 'react';
+import "../CSS/Home.css";

@@ -1,2 +1,2 @@
-import React, { useState, useEffect } from 'react';
-import './Components/Profile.css';
+import React, { useState } from 'react';
+import "../CSS/Profile.css";
