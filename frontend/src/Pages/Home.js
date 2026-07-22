@@ -3,7 +3,7 @@ import Sidebar from './Sidebar';
 import Grid from './Grid';
 import "../CSS/Home.css";
 
-function Home() {
+function Home({onSelectListing}) {
     const [filters, setFilters] = useState({
         search: '',
         minprice: '',
@@ -20,7 +20,7 @@ return(
         <Sidebar filters={filters} setFilters={setFilters}/>
     </div>
     <div className="grid">
-        <Grid filters={filters}/>
+        <Grid filters={filters} onSelectListing={onSelectListing}/>
     </div>
 </div>
 );

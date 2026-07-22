@@ -14,10 +14,6 @@ function Sidebar({filters, setFilters}){
         <div className="sidebar-content">
         <h1 className="company_name">Beans and Brew Market</h1>
         <input type="text" placeholder="Search" value={filters.search} onChange={searchChange}/>
-        <nav className='menu'>
-            <a>Your Account</a>
-            <a>Create Listing</a>
-        </nav>
         <div className='filters'>
             <h3>Categories</h3>
             <label>

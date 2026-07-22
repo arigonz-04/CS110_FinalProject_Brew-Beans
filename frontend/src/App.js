@@ -5,28 +5,44 @@ import Login from "./Pages/Login";
 import CreateAccount from "./Pages/CreateAccount";
 import UserProfile from "./Pages/Profile";
 import Home from "./Pages/Home";
+import ProductListing from './Pages/ProductListing';
 
 function App() {
   const [currentPage, setCurrentPage] = useState("Login");
   const [currentUser, setCurrentUser] = useState(null);
+  const [selectedListingId, setSelectedListingId] = useState(null);
+  const [selectedSellerId, setSelectedSellerId] = useState(null);
 
   const signOut = () => {
     setCurrentUser(null);
     setCurrentPage('Login');
   }
+
+  const handleSelectListing = (id) => {
+    setSelectedListingId(id);
+    setCurrentPage('ProductDetail');
+  }
+
+  const handleSelectSeller = (sellerId) => {
+    setSelectedSellerId(sellerId);
+    setCurrentPage('SellerProfile');
+  }
   
   const renderPage = () => {
     switch(currentPage) {
       case 'Home':
-        return <Home />;
+        return <Home onSelectListing={handleSelectListing} />;
       case 'Login':
         return <Login setCurrentPage={setCurrentPage} setCurrentUser={setCurrentUser}/>;
       case 'CreateAccount':
         return <CreateAccount setCurrentPage={setCurrentPage}/>;
       case 'Profile':
-        return <UserProfile userId={currentUser?.id || 1} setCurrentPage={setCurrentPage}/>;
+        return <UserProfile userId={currentUser?.id || 1} currentUser={currentUser} setCurrentPage={setCurrentPage}/>;
+        case 'SellerProfile':
+          return <UserProfile userId={selectedSellerId} currentUser={currentUser} setCurrentPage={setCurrentPage}/>;
       case 'ProductDetail':
-        return <div className="page"><h2>Product Detail & Recommendations (Barsha)</h2></div>;
+        return ( 
+        <ProductListing listingId={selectedListingId} currentUser={currentUser} onBack={()=> setCurrentPage('Home')} onSelectSeller={handleSelectSeller}/>);
       case 'CreateListing':
         return <CreateListing userId={currentUser?.id || 1}/>;
       case 'Messages':

@@ -235,6 +235,83 @@ app.put('/api/listings/:id', [
     }
 });
 
+//allows for a single product to be viewed
+app.get('/api/listings/:id', async(req, res) => {
+    try {
+        const [rows] = await db.query (
+            `SELECT l.*, u.name AS seller_name, u.email AS seller_email 
+             FROM listings l 
+             JOIN users u ON l.seller_id = u.id 
+             WHERE l.id = ?`,
+             [req.params.id]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({message: "Listing not found"});
+        }
+        res.json(rows[0]);
+    } catch(err) {
+        console.error("SQL error:", err);
+        res.status(500).json({message: "server error"});
+    }
+});
+
+//buy listing
+app.post ('/api/listings/:id/buy', async (req, res) => {
+    const listingId = req.params.id;
+    const {buyer_id} = req.body;
+
+    if (!buyer_id) {
+        return res.status(400).json({message: "Buyer ID is required"});
+    }
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [listings] = await connection.query (
+            "SELECT * FROM listings WHERE id = ? FOR UPDATE", 
+            [listingId]
+        );
+
+        if (listings.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({message: "listing not found"});
+        }
+
+        const listing = listings[0];
+
+        if (listing.status === 'sold') {
+            await connection.rollback();
+            return res.status(400).json({ message: "Item is already sold" });
+        }
+
+        if (listing.seller_id === buyer_id) {
+            await connection.rollback();
+            return res.status(400).json({ message: "You cannot buy your own listing" });
+        }
+
+        // Mark listing as sold
+        await connection.query(
+            "UPDATE listings SET status = 'sold' WHERE id = ?",
+            [listingId]
+        );
+
+        //purchases table
+        await connection.query(
+            "INSERT INTO purchases (listing_id, buyer_id, purchase_price) VALUES (?, ?, ?)",
+            [listingId, buyer_id, listing.price]
+        );
+        await connection.commit();
+        res.json({message: "Purchase completed"});
+    } catch(err) {
+        await connection.rollback();
+        console.error("SQL Buy Error:", err);
+        res.status(500).json({ message: "Server error during purchase" });
+    } finally { //check to avoid update errors
+        connection.release();
+    }
+})
+
 //Delete listings
 app.delete('/api/listings/:id', async(req, res) => {
     const listingID = req.params.id;

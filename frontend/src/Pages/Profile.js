@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import "../CSS/Profile.css";
 
-function Profile({ userId = 1, setCurrentPage }) {
+function Profile({ userId = 1, currentUser, setCurrentPage }) {
     const [profile, setProfile] = useState({name: "", email: "", bio: ""});
     const [activeListings, setActiveListings] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState({name: "", bio: ""});
+
+    const isOwner = currentUser && currentUser.id === Number(userId);
 
     useEffect(() => {
         fetch(`http://localhost:3000/api/profile/${userId}`)
@@ -72,10 +74,14 @@ function Profile({ userId = 1, setCurrentPage }) {
             <div className="profile-card-grid">
                 <div className="profile-left-col">
                     <h1 className="user-name-title">{profile.name}</h1>
-                    <div className="edit-profile-header">
-                        <span>Edit Profile:</span>
-                        <button type="button" className="edit-toggle-btn" onClick={handleEditClick}> {isEditing ? "Cancel" : "Edit"}</button>
-                    </div>
+                    {isOwner &&(
+                        <div className="edit-profile-header">
+                            <span>Edit Profile:</span>
+                            <button type="button" className="edit-toggle-btn" onClick={handleEditClick}>
+                                {isEditing ? "Cancel" : "Edit"}
+                            </button>
+                        </div>
+                    )}
                     {!isEditing ? (
                         <>
                         <div className="profile-pic-box">
@@ -88,8 +94,10 @@ function Profile({ userId = 1, setCurrentPage }) {
                             <h3>About Me:</h3>
                             <p className="bio-text">{profile.bio}</p>
                         </div>
-
-                        <button type="button" className="delete-account-btn" onClick={handleDeleteAccount}>Delete Account</button>
+                        
+                        {isOwner && (
+                            <button type="button" className="delete-account-btn" onClick={handleDeleteAccount}>Delete Account</button>
+                        )}
                         </>
                     ):(
                         /* EDITING MODE */
@@ -130,7 +138,9 @@ function Profile({ userId = 1, setCurrentPage }) {
                                             <span className="item-title">{item.title}</span>
                                             <span className="item-price">{item.price}</span>
                                         </div>
-                                        <button type="button" className="delete-item-btn" onClick={() => handleDeleteListing(item.id)}>x</button>
+                                        {isOwner && (
+                                            <button type="button" className="delete-item-btn" onClick={() => handleDeleteListing(item.id)}>x</button>
+                                        )}
                                     </li>
                                 ))}
                             </ul>

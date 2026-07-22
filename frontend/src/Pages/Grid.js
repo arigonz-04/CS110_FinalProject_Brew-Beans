@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from './Card';
 
 
-function Grid({filters = {}}) {
+function Grid({filters = {}, onSelectListing}) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,7 +57,6 @@ function Grid({filters = {}}) {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
 
-
     return (
         <div className ="container">
           {!Array.isArray(data) || data.length === 0 ? (
@@ -65,7 +64,7 @@ function Grid({filters = {}}) {
           ): (
             data.map((item) => (
               <Card
-              key = {item.id} product_id={item.id} title={item.title} condition={item.condition} price={item.price} image_url={item.image_url}
+              key = {item.id} product_id={item.id} title={item.title} condition={item.item_condition} price={item.price} image_url={item.image_url} status={item.status} onSelectListing={onSelectListing}
               />
             ))
           )}
