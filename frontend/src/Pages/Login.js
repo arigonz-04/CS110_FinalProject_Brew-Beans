@@ -1,54 +1,61 @@
 import React, { useState } from 'react';
 import "../CSS/Login.css";
 
-function Login({setCurrentPage}) {
+function Login({setCurrentPage, setCurrentUser}) {
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
 
   // Handle typing in inputs
-  const handleChange = (e) => {
-    setFormData({...formData, [e.target.name]: e.target.value
-    });
-  };
+    const handleChange = (e) => {
+        setFormData({...formData, [e.target.name]: e.target.value
+        });
+    };
 
     const handleSubmit = (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    if (!formData.email || !formData.password) {
-        alert("Please fill out required fields");
-        return;
-    }
-
-    fetch("http://localhost:3000/api/auth/login", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(formData)
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log("Login response:", data);
-        if (data.message) {
-            alert(data.message);
-        } else {
-            alert("Login successful");
+        if (!formData.email || !formData.password) {
+            alert("Please fill out required fields");
+            return;
         }
-    })
-    .catch(error => {
-        console.error("Login error:", error);
-        alert("Failed to connect to server");
-    });
-  };
 
-  const handleThirdPartySignIn = () => {
-    window.location.href = "https://accounts.google.com/o/oauth2/v2/auth";
-  };
+        fetch("http://localhost:3000/api/auth/login", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(formData)
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log("Login response:", data);
+            if (data.user) {
+                if (setCurrentUser) {
+                    setCurrentUser(data.user);
+                }
+                alert("Login successful!");
+                if (setCurrentPage) {
+                    setCurrentPage('Profile'); //testing
+                }
+            } else {
+                // Alert the error message returned from server if login failed
+                alert(data.message || "Invalid credentials");
+            }
+        })
+        .catch(error => {
+            console.error("Login error:", error);
+            alert("Failed to connect to server");
+        });
+    };
 
-  const handleCreateAccount = () => {
-    alert("Moving to user registration page");
-    setCurrentPage('CreateAccount');
-  }
+    const handleThirdPartySignIn = () => {
+        window.location.href = "https://accounts.google.com/o/oauth2/v2/auth";
+    };
+
+    const handleCreateAccount = () => {
+        alert("Moving to user registration page");
+        setCurrentPage('CreateAccount');
+    }
 
   return (
     <div className="login-page-container">

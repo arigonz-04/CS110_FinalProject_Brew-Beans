@@ -2,36 +2,27 @@ import React, { useState, useEffect } from 'react';
 import "../CSS/Profile.css";
 
 function Profile({ userId = 1, setCurrentPage }) {
-    const [profile, setProfile] = useState({
-        name: "Ariana",
-        email: "ariana@example.com",
-        bio: "Love brewing espresso at home and trying out new coffee beans!",
-        avatar: "/images/default-avatar.png"
-    });
-
-  // MOCK DATA FOR TESTING
-    const [activeListings, setActiveListings] = useState([
-        { id: 101, title: "French Press", price: "$15.00" },
-        { id: 102, title: "Dark Roast Beans 1lb", price: "$12.00" },
-        { id: 103, title: "Syrup Pump Set", price: "$8.00" }
-    ]);
-
+    const [profile, setProfile] = useState({name: "", email: "", bio: ""});
+    const [activeListings, setActiveListings] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
-    const [editData, setEditData] = useState({ name: "", bio: "" });
+    const [editData, setEditData] = useState({name: "", bio: ""});
 
-  // Load user data on mount
     useEffect(() => {
         fetch(`http://localhost:3000/api/profile/${userId}`)
         .then(res => res.json())
         .then(data => {
-        if (data.name) {
-            setProfile(prev => ({ ...prev, name: data.name, bio: data.bio || prev.bio }));
-        }
+            if (data.user) {
+                setProfile(data.user);
+                setActiveListings(data.listings || []);
+            }
         })
-        .catch(err => console.error("Error fetching profile:", err));
+        .catch(err => {
+            console.error("Error fetching profile:", err);
+        });
     }, [userId]);
+
     const handleEditClick = () => {
-        setEditData({ name: profile.name, bio: profile.bio });
+        setEditData({name: profile.name, bio: profile.bio || ""});
         setIsEditing(!isEditing);
     };
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import "../CSS/CreateAccount.css";
 
-function CreateAccount() {
+function CreateAccount({setCurrentPage}) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -38,6 +38,9 @@ function CreateAccount() {
           alert("Registration failed: " + data.errors[0].msg);
         } else {
           alert(data.message || "Account created successfully!");
+          if (setCurrentPage) {
+            setCurrentPage('Login');
+          }
         }
     })
     .catch(error => {

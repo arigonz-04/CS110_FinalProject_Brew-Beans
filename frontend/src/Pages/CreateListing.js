@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import "../CSS/CreateListing.css";
 
-function CreateListing() {
+function CreateListing({userId = 1}) {
   const [listing, setListing] = useState({
     title: "",
     price: "",
@@ -29,16 +29,18 @@ function CreateListing() {
  const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!listing.title.trim() || !listing.price || !listing.category || !listing.item_condition || !listing.image_url) {
+    if (!listing.title.trim() || !listing.price || !listing.category || !listing.item_condition) {
       alert("Please fill out all required fields!");
       return;
     }
+
+    const payload = { ...listing, seller_id: userId };
 
     //sends listing data to backend API
     fetch("http://localhost:3000/api/listings", {
         method: "POST",
         headers: {"Content-Type": "application/json" },
-        body: JSON.stringify(listing)
+        body: JSON.stringify(payload)
     })
     .then(res => res.json())
     .then(data => {

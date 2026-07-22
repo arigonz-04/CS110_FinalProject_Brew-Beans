@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const bcrypt = require('bcrypt');
 const { check, validationResult } = require('express-validator');
 const app = express();
 const fs = require('node:fs');
@@ -76,14 +77,14 @@ app.post('/api/auth/register', [
     const {name, email, password} = req.body;
     try {
         const [existing] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
-        if (existing.lenth > 0) {
+        if (existing.length > 0) {
             return res.status(400).json({message: "Email exists already"});
         }
 
         const hashPassword = await bcrypt.hash(password, 10);
 
         const [result] = await db.query(
-            'INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?', [name, email,hashPassword]
+            'INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)', [name, email,hashPassword]
         );
 
         res.status(201).json({
@@ -91,6 +92,7 @@ app.post('/api/auth/register', [
         });
     } catch(err) {
         console.error("SQL Register Error", err);
+        res.status(500).json({message: "Server error"});
     }
 });
 
@@ -102,12 +104,12 @@ app.post('/api/auth/login', [
     const {email, password} = req.body;
     try {
         const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (users.length == 0) {
+        if (users.length === 0) {
             return res.status(400).json({message: "Invalid email or password"});
         }
         const user = users[0];
 
-        const isMatch = await bcrypt.compare(password, user.pasword_hash);
+        const isMatch = await bcrypt.compare(password, user.password_hash);
         if (!isMatch) {
             return res.status(400).json({message: "Invalid email or password"});
         }
@@ -118,6 +120,7 @@ app.post('/api/auth/login', [
         });
     } catch (err) {
         console.error("SQL Error:", err);
+        res.status(500).json({message: "Server error"});
     }
 });
 
@@ -129,7 +132,7 @@ app.get('/api/profile/:id', async(req, res) => {
         'SELECT id, name, email, bio, profile_picture_url, created_at FROM users WHERE id= ?', [userID]
     );
 
-    if (users.length == 0) {
+    if (users.length === 0) {
         return res.status(404).json({message: "User not found"});
     }
 
@@ -140,6 +143,7 @@ app.get('/api/profile/:id', async(req, res) => {
     res.json({user: users[0], listings: listings});
    } catch(err) {
     console.error("SQL Profile Error:", err);
+    res.status(500).json({message: "Server error"});
    }
 });
 
@@ -155,11 +159,13 @@ app.put('/api/profile/:id', [
         'UPDATE users SET name = COALESCE(?, name), bio = COALESCE(?, bio) WHERE id = ?',[name, bio, userID]
     );
     
-    if (result.affectedRows == 0) {
+    if (result.affectedRows === 0) {
         return res.status(404).json({message: "User not found"});
     }
+    res.json({message: "Profile Updated!"});
    } catch (err) {
     console.error("SQL Profile Update Error", err);
+    res.status(500).json({message: "Server error"});
    }
 });
 
@@ -169,16 +175,19 @@ app.delete('/api/profile/:id', async(req, res) => {
     try {
         const[result] = await db.query('DELETE FROM users WHERE id = ?', [userID]);
 
-        if (result.affectedRows == 0) {
+        if (result.affectedRows === 0) {
             return res.status(404).json({message: "User not found"});
         }
+        res.json({message: "Account deleted!"});
     } catch (err) {
         console.error("SQL Delete Profile Error:", err);
+        res.status(500).json({message: "Server error"});
     }
 });
 
 // Market Create Listings
 app.post('/api/listings', [
+    check('seller_id').notEmpty().isInt(),
     check('title').notEmpty().trim().escape(),
     check('price').isFloat({min:0}),
     check('category').isIn(['Coffee Beans', 'Espresso Machines', 'Syrups', 'Accessories']),
@@ -192,8 +201,10 @@ app.post('/api/listings', [
         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [seller_id, title, price, category, item_condition, description || '', image_url || '']
         );
+        res.status(201).json({message:"Listing published!", listingId: result.insertId});
     } catch(err) {
         console.error("SQL Create Listing Error:", err);
+        res.status(500).json({message: "Error"});
     }
 });
 
@@ -214,11 +225,13 @@ app.put('/api/listings/:id', [
             WHERE id = ?`, [title, price, description, listingID]
         );
 
-        if (result.affectedRows == 0) {
+        if (result.affectedRows === 0) {
             return res.status(404).json({message: "Listing not found"});
         }
+        res.json({message: "Listing updated!"});
     } catch(err) {
         console.error("SQL Edit Listing Error:", err);
+        res.status(500).json({message: "Server error"});
     }
 });
 
@@ -228,11 +241,13 @@ app.delete('/api/listings/:id', async(req, res) => {
     try {
         const [result] = await db.query('DELETE FROM listings WHERE id = ?', [listingID]);
 
-        if (result.affectedRows == 0) {
+        if (result.affectedRows === 0) {
             return res.status(404).json({message: "Listing not found"});
         }
+        res.json({message: "Listing deleted!"});
     } catch(err) {
         console.error("SQL Delete Listing Error:", err);
+        res.status(500).json({message:"Server error"});
     }
 });
 
