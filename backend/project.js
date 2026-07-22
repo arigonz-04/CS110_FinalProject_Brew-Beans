@@ -2,9 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const { check, validationResult } = require('express-validator');
 const app = express();
+const fs = require('node:fs');
+
 app.use(cors());
 app.use(express.json());
 const port = 3000;
+
 
 const mysql = require('mysql2/promise');
 
@@ -38,6 +41,28 @@ const inputChecker = (req, res, next) => {
 app.get('/', (req, res) => {
     res.send("Welcome To The Brew & Beans Market!");
 });
+
+/*
+app.get('/api', (req,res) =>{
+
+    fs.readFile('index.mhtml', 'utf8', (err, data) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+
+  //res.setHeader('Content-Type', 'multipart/related');
+  res.send(data);
+});
+
+
+   
+})
+
+*/
+
+
+
 // ==========================================
 // ARIANA'S TASKS
 // ==========================================
@@ -216,9 +241,72 @@ app.delete('/api/listings/:id', async(req, res) => {
 // ==========================================
 
 // Main Home Screen & Search Filters
-app.get('/api/listings', (req, res) => {
+app.get('/api/listings',[    
     // TODO: Implement SQL LIKE search and category/condition filtering using req.query
-    res.json({ message: "Fetching and filtering listings placeholder" });
+    //q is for query
+    check('q').optional().trim().escape(),
+    check('minprice').optional().trim().escape(),
+    check('maxprice').optional().isFloat({min:0}),
+    check('coffee').optional().trim().escape(),
+    check('machines').optional().trim().escape(),
+    check('syrups').optional().trim().escape(),
+    check('accessories').optional().trim().escape(),
+
+
+],inputChecker, async(req,res) => {
+     const listingID = req.params.id;
+    const {title,minprice,maxprice,coffee,machines,syrups,accessories} = req.query;
+     try {
+
+        var sql = "SELECT * FROM listings";
+
+        fields = []
+        // Mandatory
+            
+        sql += " WHERE title = ?"
+        fields.push("title")
+
+        if(minprice != null)  {
+            sql += "AND minprice = ?"
+            fields.push = "minprice"
+        }
+
+        if(maxprice != null) {
+            sql += "AND maxprice = ?"
+            fields.push = "maxprice"
+        }
+
+         if(coffee != null) {
+            sql += "AND category = coffee?"
+        }
+
+        if(machines != null) {
+            sql += "AND category = machines"
+        }
+
+        if(syrups != null) {
+            sql += "AND category = syrups"
+        }
+
+        if(accessories != null) {
+            sql += "AND category = accessories"
+        }
+        
+
+
+        const [result] = await db.query(
+            sql, fields
+        );
+
+        if (result.affectedRows == 0) {
+            return res.status(404).json({message: "Listing not found"});
+        }
+    } catch(err) {
+        console.error("SQL Edit Listing Error:", err);
+    }   
+
+
+ res.json({ message: "Fetching and filtering listings placeholder" });
 });
 
 // Reputation System
