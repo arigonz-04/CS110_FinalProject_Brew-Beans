@@ -1,0 +1,124 @@
+/* Main Layout Container */
+.container {
+  display: flex;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  align-items: flex-start;
+}
+
+/* Sidebar Styling */
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background-color: #f8f6f3;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e0d8d0;
+}
+
+.sidebar h1.company_name {
+  font-size: 1.4rem;
+  color: #4a3b32;
+  margin-bottom: 15px;
+}
+
+.sidebar input[type="text"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  box-sizing: border-box;
+}
+
+.sidebar .menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.sidebar .menu a {
+  color: #6b4f3b;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sidebar .menu a:hover {
+  text-decoration: underline;
+}
+
+.sidebar .filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar .filters label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* Products Grid Layout */
+.grid {
+  flex-grow: 1;
+}
+
+.grid-layout, .container.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+/* Product Card Styling */
+.card {
+  border: 1px solid #e2d7cd;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background-color: #f0f0f0;
+}
+
+.card-text {
+  padding: 12px;
+}
+
+.card-text .title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #333;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.card-text .condition {
+  color: #777;
+  font-size: 0.85rem;
+  margin: 4px 0;
+}
+
+.card-text .price {
+  font-weight: bold;
+  color: #2e7d32;
+  font-size: 1.1rem;
+  margin-top: 8px;
+}

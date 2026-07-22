@@ -256,74 +256,42 @@ app.delete('/api/listings/:id', async(req, res) => {
 // ==========================================
 
 // Main Home Screen & Search Filters
-app.get('/api/listings',[    
-    // TODO: Implement SQL LIKE search and category/condition filtering using req.query
-    //q is for query
-    check('q').optional().trim().escape(),
-    check('minprice').optional().trim().escape(),
-    check('maxprice').optional().isFloat({min:0}),
-    check('coffee').optional().trim().escape(),
-    check('machines').optional().trim().escape(),
-    check('syrups').optional().trim().escape(),
-    check('accessories').optional().trim().escape(),
+app.get('/api/listings', async(req, res) => {
+    const {q, minprice, maxprice, categories} = req.query;
+    try {
+    let sql = "SELECT * FROM listings WHERE 1=1";
+    const queryParams = [];
 
+    if (q) {
+      sql += " AND title LIKE ?";
+      queryParams.push(`%${q}%`);
+    }
 
-],inputChecker, async(req,res) => {
-     const listingID = req.params.id;
-    const {title,minprice,maxprice,coffee,machines,syrups,accessories} = req.query;
-     try {
+    if (minprice) {
+      sql += " AND price >= ?";
+      queryParams.push(parseFloat(minprice));
+    }
+    if (maxprice) {
+      sql += " AND price <= ?";
+      queryParams.push(parseFloat(maxprice));
+    }
 
-        var sql = "SELECT * FROM listings";
+    if (categories) {
+      const categoryList = categories.split(','); // ['coffee', 'machines']
+      const placeholders = categoryList.map(() => '?').join(',');
+      
+      sql += ` AND category IN (${placeholders})`;
+      queryParams.push(...categoryList);
+    }
 
-        fields = []
-        // Mandatory
-            
-        sql += " WHERE title = ?"
-        fields.push("title")
+    const [rows] = await db.query(sql, queryParams);
+    res.json(rows);
 
-        if(minprice != null)  {
-            sql += "AND minprice = ?"
-            fields.push = "minprice"
-        }
-
-        if(maxprice != null) {
-            sql += "AND maxprice = ?"
-            fields.push = "maxprice"
-        }
-
-         if(coffee != null) {
-            sql += "AND category = coffee?"
-        }
-
-        if(machines != null) {
-            sql += "AND category = machines"
-        }
-
-        if(syrups != null) {
-            sql += "AND category = syrups"
-        }
-
-        if(accessories != null) {
-            sql += "AND category = accessories"
-        }
-        
-
-
-        const [result] = await db.query(
-            sql, fields
-        );
-
-        if (result.affectedRows == 0) {
-            return res.status(404).json({message: "Listing not found"});
-        }
-    } catch(err) {
-        console.error("SQL Edit Listing Error:", err);
-    }   
-
-
- res.json({ message: "Fetching and filtering listings placeholder" });
+  } catch (err) {
+    console.error("SQL Search Filter Error:", err);
+    res.status(500).json({ error: "Failed to fetch filtered listings" });
+  }
 });
-
 // Reputation System
 app.post('/api/reviews', (req, res) => {
     // TODO: Insert 1-5 star review into SQL reviews table

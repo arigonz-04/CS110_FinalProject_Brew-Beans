@@ -8,7 +8,7 @@ return(
 <div className='card'>
 
 <div className="image">
-<img src={image_url}> </img>
+<img src={image_url} alt={title}/>
 
 <div className='card-text'>
     <a className='title' href={`/products/${product_id}`}>{title}</a>

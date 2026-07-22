@@ -1,16 +1,26 @@
 import React, { useState } from 'react';
+import Sidebar from './Sidebar';
+import Grid from './Grid';
 import "../CSS/Home.css";
-import "Grid.js"
 
 function Home() {
+    const [filters, setFilters] = useState({
+        search: '',
+        minprice: '',
+        maxprice: '',
+        'Coffee Beans': false,
+        'Espresso Machines': false,
+        'Syrups': false,
+        'Accessories': false
+    });
 
 return(
-<div className="container">
+<div className="container" style={{display: 'flex', gap: '20px'}}>
     <div className="sidebar">
-        <Sidebar/>
+        <Sidebar filters={filters} setFilters={setFilters}/>
     </div>
     <div className="grid">
-        <Grid/>
+        <Grid filters={filters}/>
     </div>
 </div>
 );

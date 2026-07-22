@@ -4,6 +4,7 @@ import CreateListing from "./Pages/CreateListing";
 import Login from "./Pages/Login";
 import CreateAccount from "./Pages/CreateAccount";
 import UserProfile from "./Pages/Profile";
+import Home from "./Pages/Home";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("Login");
@@ -17,7 +18,7 @@ function App() {
   const renderPage = () => {
     switch(currentPage) {
       case 'Home':
-        return <div className="page"><h2>Marketplace Home Grid (Barsha)</h2></div>;
+        return <Home />;
       case 'Login':
         return <Login setCurrentPage={setCurrentPage} setCurrentUser={setCurrentUser}/>;
       case 'CreateAccount':
