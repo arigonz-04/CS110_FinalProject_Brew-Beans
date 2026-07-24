@@ -6,6 +6,10 @@ function Profile({ userId = 1, currentUser, setCurrentPage }) {
     const [activeListings, setActiveListings] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState({name: "", bio: ""});
+    const [ratingData, setRatingData] = useState({ average: 0, count: 0 });
+    const [selectedListing, setSelectedListing] = useState(0);
+    const [userScore, setUserScore] = useState(0);
+    const [reviewComment, setReviewComment] = useState("");
 
     const isOwner = currentUser && currentUser.id === Number(userId);
 
@@ -20,6 +24,17 @@ function Profile({ userId = 1, currentUser, setCurrentPage }) {
         })
         .catch(err => {
             console.error("Error fetching profile:", err);
+        });
+    }, [userId]);
+
+    useEffect(() => {
+        fetch(`http://localhost:3000/api/reviews/${userId}`)
+        .then(res => res.json())
+        .then(data => {
+            setRatingData(data);
+        })
+        .catch(err => {
+            console.error("Error fetching reviews:", err);
         });
     }, [userId]);
 
@@ -43,6 +58,29 @@ function Profile({ userId = 1, currentUser, setCurrentPage }) {
         })
         .catch(err => console.error("Error updating profile:", err));
     };
+
+    const handleReviewSubmit = () => {
+        fetch(`http://localhost:3000/api/reviews/${userId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                reviewerId: currentUser.id,
+                listingId: selectedListing,
+                rating: userScore,
+                comment: reviewComment
+            })
+        })
+        .then(res => res.json())
+        .then(() => {
+            setSelectedListing(0);
+            setUserScore(0);
+            setReviewComment("");
+            return fetch(`http://localhost:3000/api/reviews/${userId}`)
+                .then(res => res.json())
+                .then(data => setRatingData(data));
+        })
+        .catch(err => console.error("Error submitting review:", err));
+    }
 
     const handleDeleteAccount = () => {
     if (window.confirm("Are you sure you want to delete your account?")) {
@@ -94,7 +132,45 @@ function Profile({ userId = 1, currentUser, setCurrentPage }) {
                             <h3>About Me:</h3>
                             <p className="bio-text">{profile.bio}</p>
                         </div>
-                        
+
+                        <div className="reviews-section">
+                            <h3>Reviews:</h3>
+                            {ratingData.count > 0 ? (
+                                <p> <strong>{Number(ratingData.average).toFixed(1)}/5</strong> star average from <strong>{ratingData.count}</strong> reviews</p>
+                            ) : (
+                                <p className="no-reviews">No reviews yet.</p>
+                            )}
+                        </div>
+
+                        {!isOwner && (
+                            <div className="leave-review-box">
+                                <h3>Leave a review</h3>
+                                <label>Which listing?</label>
+                                <select value={selectedListing} onChange={(e) => setSelectedListing(Number(e.target.value))}>
+                                    <option value={0}>Select a listing</option>
+                                    {activeListings.map(item => (
+                                        <option key={item.id} value={item.id}>{item.title}</option>
+                                    ))}
+                                </select>
+
+                                <label>Rating:</label>
+                                <select value={userScore} onChange={(e) => setUserScore(Number(e.target.value))}>
+                                    <option value={0}>Select</option>
+                                    {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
+                                </select>
+
+                                <textarea
+                                    placeholder="Leave a comment (optional)"
+                                    value={reviewComment}
+                                    onChange={(e) => setReviewComment(e.target.value)}
+                                />
+
+                                <button type="button" onClick={handleReviewSubmit} disabled={!selectedListing || !userScore}>
+                                    Submit Review
+                                </button>
+                            </div>
+                        )}
+
                         {isOwner && (
                             <button type="button" className="delete-account-btn" onClick={handleDeleteAccount}>Delete Account</button>
                         )}

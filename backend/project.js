@@ -369,10 +369,35 @@ app.get('/api/listings', async(req, res) => {
     res.status(500).json({ error: "Failed to fetch filtered listings" });
   }
 });
+
 // Reputation System
-app.post('/api/reviews', (req, res) => {
-    // TODO: Insert 1-5 star review into SQL reviews table
-    res.status(201).json({ message: "Review submitted placeholder" });
+app.get('/api/reviews/:sellerId', async (req, res) => {
+    const { sellerId } = req.params;
+    try {
+        const [results] = await db.query(
+            "SELECT AVG(rating) as average, COUNT(*) as count FROM reviews WHERE target_seller_id = ?",
+            [sellerId]
+        );
+        res.json({ average: results[0].average || 0, count: results[0].count || 0 });
+    } catch (err) {
+        console.error("SQL Reviews Error:", err);
+        res.status(500).json({ message: "Error fetching reviews" });
+    }
+});
+
+app.post('/api/reviews/:sellerId', async (req, res) => {
+    const { sellerId } = req.params;
+    const { reviewerId, listingId, rating, comment } = req.body;
+    try {
+        await db.query(
+            "INSERT INTO reviews (listing_id, reviewer_id, target_seller_id, rating, comment) VALUES (?, ?, ?, ?, ?)",
+            [listingId, reviewerId, sellerId, rating, comment]
+        );
+        res.json({ message: "Review submitted!" });
+    } catch (err) {
+        console.error("SQL Review Insert Error:", err);
+        res.status(500).json({ message: "Error saving review" });
+    }
 });
 
 // Recommendation System
